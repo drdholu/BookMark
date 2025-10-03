@@ -6,8 +6,10 @@ import Link from "next/link";
 import { uploadToBucket, getPublicUrl } from "@/lib/storage";
 import { useCallback } from "react";
 import { BookRow } from "@/lib/types";
+import { useRouter } from "next/navigation";
 
 export default function LibraryPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState<string | null>(null);
   const [books, setBooks] = useState<BookRow[]>([]);
@@ -31,17 +33,24 @@ export default function LibraryPage() {
       setEmail(user?.email ?? null);
       setLoading(false);
       await refreshBooks();
+      if (!user) {
+        router.replace("/");
+      }
     })();
     const { data: subscription } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!active) return;
-      setEmail(session?.user?.email ?? null);
+      const email = session?.user?.email ?? null;
+      setEmail(email);
+      if (!email) {
+        router.replace("/");
+      }
       await refreshBooks();
     });
     return () => {
       active = false;
       subscription.subscription.unsubscribe();
     };
-  }, []);
+  }, [router]);
 
   if (loading) {
     return <div className="p-6">Loading...</div>;

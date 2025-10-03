@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize2, Minimize2 } from "lucide-react";
-import { getSignedUrl } from "@/lib/storage";
 
 type PdfReaderProps = {
   fileUrl: string;
@@ -11,7 +10,7 @@ type PdfReaderProps = {
 
 type PDFJSLib = {
   GlobalWorkerOptions: { workerSrc: string };
-  getDocument: (src: string | ArrayBuffer) => { promise: Promise<PDFDocumentProxy> };
+  getDocument: (src: unknown) => { promise: Promise<PDFDocumentProxy> };
   version?: string;
 };
 
@@ -56,23 +55,19 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
         setLoading(true);
         setError(null);
 
-        // Initialize PDF.js only once
+        // Initialize PDF.js once via ESM dynamic import (no global script tag)
         if (!pdfjsLib) {
           if (typeof window !== 'undefined') {
-            // Use CDN version to avoid webpack issues
+            // Load PDF.js via browser script tag to avoid Next.js build-time ESM external import issues
             const script = document.createElement('script');
             script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs';
             script.type = 'module';
-            
             await new Promise((resolve, reject) => {
               script.onload = resolve;
               script.onerror = reject;
               document.head.appendChild(script);
             });
-
-            // Access the global pdfjsLib
-            pdfjsLib = window.pdfjsLib as PDFJSLib;
-            
+            pdfjsLib = (window as unknown as { pdfjsLib?: PDFJSLib }).pdfjsLib ?? null;
             if (pdfjsLib) {
               pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.mjs';
             }
@@ -83,46 +78,14 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
           throw new Error('Failed to load PDF.js library');
         }
 
-        // Try to fetch PDF data, with fallback to signed URL
-        let pdfData: ArrayBuffer;
-        let actualUrl = fileUrl;
-        
-        try {
-          const response = await fetch(fileUrl);
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-          }
-          pdfData = await response.arrayBuffer();
-        } catch (fetchError) {
-          console.error('Error fetching PDF with public URL:', fetchError);
-          
-          // Try with signed URL as fallback
-          try {
-            // Extract path from the public URL
-            const urlParts = fileUrl.split('/storage/v1/object/public/');
-            if (urlParts.length === 2) {
-              const pathParts = urlParts[1].split('/');
-              const bucket = pathParts[0];
-              const path = pathParts.slice(1).join('/');
-              
-              actualUrl = await getSignedUrl(bucket, path, 3600); // 1 hour expiry
-              console.log('Using signed URL:', actualUrl);
-              
-              const response = await fetch(actualUrl);
-              if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-              }
-              pdfData = await response.arrayBuffer();
-            } else {
-              throw new Error('Invalid file URL format');
-            }
-          } catch (signedUrlError) {
-            console.error('Error fetching PDF with signed URL:', signedUrlError);
-            throw new Error('Failed to load PDF document. Please check if the file exists and is accessible.');
-          }
-        }
-
-        const loadingTask = pdfjsLib.getDocument(pdfData);
+        // Stream through local proxy to ensure Range support and cache headers
+        const proxiedUrl = `/api/pdf-proxy?url=${encodeURIComponent(fileUrl)}`;
+        const loadingTask = pdfjsLib.getDocument({
+          url: proxiedUrl,
+          disableRange: false,
+          disableStream: false,
+          withCredentials: false,
+        });
         const pdf = await loadingTask.promise;
         
         if (!mounted) return;
@@ -188,6 +151,18 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
         canvasContext: context,
         viewport,
       }).promise;
+
+      // Prefetch adjacent pages to minimize latency when navigating
+      try {
+        if (pageNumber + 1 <= (pdfDocRef.current?.numPages ?? 0)) {
+          void pdfDocRef.current?.getPage(pageNumber + 1);
+        }
+        if (pageNumber - 1 >= 1) {
+          void pdfDocRef.current?.getPage(pageNumber - 1);
+        }
+      } catch {
+        // best-effort prefetch; ignore errors
+      }
     } catch (err) {
       console.error("Error rendering page:", err);
       setError("Failed to render page. Please try again.");
@@ -300,6 +275,13 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
       <div className="border-b border-border bg-card">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
+            <a
+              href="/library"
+              className="p-2 rounded-lg hover:bg-accent transition-colors mr-1"
+              title="Back to Library"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </a>
             <button
               onClick={goToPreviousPage}
               disabled={pageNum <= 1}

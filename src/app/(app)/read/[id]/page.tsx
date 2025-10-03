@@ -22,7 +22,7 @@ export default function ReadPage() {
       }
       const { data, error } = await supabase
         .from("books")
-        .select("*")
+        .select("id,format,file_url")
         .eq("id", params.id)
         .single();
       if (!active) return;
