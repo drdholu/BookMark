@@ -86,11 +86,11 @@ function BookList({ books }: { books: BookRow[] }) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {books.map((b) => (
-        <div key={b.id} className="border rounded p-3">
+        <a key={b.id} href={`/read/${b.id}`} className="border rounded p-3 block hover:bg-accent">
           <div className="aspect-[3/4] bg-muted mb-3 rounded" style={{ backgroundImage: b.cover_url ? `url(${b.cover_url})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center' }} />
           <div className="font-medium truncate">{b.title ?? "Untitled"}</div>
           <div className="text-sm opacity-70 truncate">{b.author ?? "Unknown"}</div>
-        </div>
+        </a>
       ))}
     </div>
   );

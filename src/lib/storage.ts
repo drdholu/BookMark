@@ -18,4 +18,13 @@ export function getPublicUrl(bucket: string, path: string) {
   return data.publicUrl;
 }
 
+export async function getSignedUrl(bucket: string, path: string, expiresIn: number = 3600) {
+  const { data, error } = await supabase.storage
+    .from(bucket)
+    .createSignedUrl(path, expiresIn);
+  
+  if (error) throw error;
+  return data.signedUrl;
+}
+
 
