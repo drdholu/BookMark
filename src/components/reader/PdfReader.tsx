@@ -55,10 +55,8 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
         setLoading(true);
         setError(null);
 
-        // Initialize PDF.js once via ESM dynamic import (no global script tag)
         if (!pdfjsLib) {
           if (typeof window !== 'undefined') {
-            // Load PDF.js via browser script tag to avoid Next.js build-time ESM external import issues
             const script = document.createElement('script');
             script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs';
             script.type = 'module';

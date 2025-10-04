@@ -13,39 +13,68 @@ export default function LibraryPage() {
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState<string | null>(null);
   const [books, setBooks] = useState<BookRow[]>([]);
-  // keeping defaults inline for now; env override wiring can be added later
 
   async function refreshBooks() {
-    const { data, error } = await supabase
-      .from("books")
-      .select("*")
-      .order("uploaded_at", { ascending: false });
-    if (!error && data) setBooks(data as unknown as BookRow[]);
+    try {
+      const { data, error } = await supabase
+        .from("books")
+        .select("*")
+        .order("uploaded_at", { ascending: false });
+      
+      if (error) {
+        console.error("Error fetching books:", error);
+        return;
+      }
+      
+      setBooks(data as unknown as BookRow[]);
+    } catch (error) {
+      console.error("Error in refreshBooks:", error);
+    }
   }
 
   useEffect(() => {
     let active = true;
-    (async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!active) return;
-      setEmail(user?.email ?? null);
-      setLoading(false);
-      await refreshBooks();
-      if (!user) {
-        router.replace("/");
+    
+    const loadLibrary = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        
+        if (!active) return;
+        
+        if (!user) {
+          router.replace("/");
+          return;
+        }
+        
+        setEmail(user.email ?? null);
+        await refreshBooks();
+        setLoading(false);
+      } catch (error) {
+        console.error("Error loading library:", error);
+        if (active) {
+          setLoading(false);
+        }
       }
-    })();
-    const { data: subscription } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    };
+
+    loadLibrary();
+
+    const { data: subscription } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!active) return;
-      const email = session?.user?.email ?? null;
-      setEmail(email);
-      if (!email) {
+      
+      if (event === 'SIGNED_OUT' || !session?.user) {
         router.replace("/");
+        return;
       }
-      await refreshBooks();
+      
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        setEmail(session.user.email ?? null);
+        await refreshBooks();
+      }
     });
+
     return () => {
       active = false;
       subscription.subscription.unsubscribe();

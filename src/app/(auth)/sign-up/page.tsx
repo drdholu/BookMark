@@ -12,14 +12,12 @@ export default function SignUpPage() {
   const [status, setStatus] = useState<string | null>(null);
 
   useEffect(() => {
-    const { data: subscription } = supabase.auth.onAuthStateChange((event) => {
+    const { data } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN") {
         router.replace("/library");
       }
     });
-    return () => {
-      subscription.subscription.unsubscribe();
-    };
+    return () => data.subscription.unsubscribe();
   }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
