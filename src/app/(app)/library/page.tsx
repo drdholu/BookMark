@@ -17,20 +17,33 @@ export default function LibraryPage() {
   async function refreshBooks() {
     try {
       console.log("🔄 Fetching books from database...");
-      const { data, error } = await supabase
+      
+      // Add timeout to detect hanging queries
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Database query timeout after 10 seconds")), 10000)
+      );
+      
+      const queryPromise = supabase
         .from("books")
         .select("*")
         .order("uploaded_at", { ascending: false });
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
+      
       if (error) {
-        console.error("❌ Error fetching books:", error);
+        console.error("❌ Supabase error:", error);
+        console.error("❌ Error details:", JSON.stringify(error, null, 2));
         return;
       }
       
       console.log("📖 Books fetched:", data?.length || 0, "books");
+      console.log("📖 Raw data:", data);
       setBooks(data as unknown as BookRow[]);
     } catch (error) {
       console.error("❌ Error in refreshBooks:", error);
+      console.error("❌ Error type:", typeof error);
+      console.error("❌ Error message:", error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -70,6 +83,14 @@ export default function LibraryPage() {
       }
     };
 
+    // Add a safety timeout to prevent infinite loading
+    const safetyTimeout = setTimeout(() => {
+      console.log("⚠️ Safety timeout reached, forcing loading to false");
+      if (active) {
+        setLoading(false);
+      }
+    }, 15000); // 15 second safety timeout
+
     loadLibrary();
 
     const { data: subscription } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -88,6 +109,7 @@ export default function LibraryPage() {
 
     return () => {
       active = false;
+      clearTimeout(safetyTimeout);
       subscription.subscription.unsubscribe();
     };
   }, [router]);
