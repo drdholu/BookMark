@@ -5,6 +5,8 @@ import { supabase } from "@/lib/supabase";
 import EpubReader from "@/components/reader/EpubReader";
 import PdfReader from "@/components/reader/PdfReader";
 import { useParams, useRouter } from "next/navigation";
+import { Card, CardContent } from "@/components/ui/card";
+import { BookOpen } from "lucide-react";
 
 export default function ReadPage() {
   const params = useParams<{ id: string }>();
@@ -36,7 +38,9 @@ export default function ReadPage() {
     return () => { active = false; };
   }, [params.id, router]);
 
-  if (loading) return <div className="p-6">Loading...</div>;
+  if (loading) {
+    return null; // Let the individual readers handle their own loading states
+  }
 
   if (book && book.format === "epub") {
     return <EpubReader bookId={book.id} fileUrl={book.file_url} />;

@@ -13,6 +13,7 @@ export default function EpubReader({ bookId, fileUrl }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [rendition, setRendition] = useState<Rendition | null>(null);
   const bookRef = useRef<Book | null>(null);
+  const [loading, setLoading] = useState(true);
 
   // Load last position
   useEffect(() => {
@@ -31,6 +32,7 @@ export default function EpubReader({ bookId, fileUrl }: Props) {
       });
       setRendition(rend);
       await rend.display(lastCfi);
+      setLoading(false);
       // Theme basics
       rend.themes.register("default", {
         body: {
@@ -57,6 +59,17 @@ export default function EpubReader({ bookId, fileUrl }: Props) {
       });
     })();
   }, [bookId, fileUrl]);
+
+  if (loading) {
+    return (
+      <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading EPUB...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
