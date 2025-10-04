@@ -13,14 +13,15 @@ export default function LibraryPage() {
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState<string | null>(null);
   const [books, setBooks] = useState<BookRow[]>([]);
+  const [loadingMessage, setLoadingMessage] = useState("Loading...");
 
-  async function refreshBooks() {
+  async function refreshBooks(retryCount = 0) {
+    const maxRetries = 2;
+    
     try {
-      console.log("🔄 Fetching books from database...");
-      
       // Add timeout to detect hanging queries
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error("Database query timeout after 10 seconds")), 10000)
+        setTimeout(() => reject(new Error("Database query timeout after 8 seconds")), 8000)
       );
       
       const queryPromise = supabase
@@ -32,18 +33,20 @@ export default function LibraryPage() {
       const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
       
       if (error) {
-        console.error("❌ Supabase error:", error);
-        console.error("❌ Error details:", JSON.stringify(error, null, 2));
+        console.error("Error fetching books:", error);
         return;
       }
       
-      console.log("📖 Books fetched:", data?.length || 0, "books");
-      console.log("📖 Raw data:", data);
       setBooks(data as unknown as BookRow[]);
     } catch (error) {
-      console.error("❌ Error in refreshBooks:", error);
-      console.error("❌ Error type:", typeof error);
-      console.error("❌ Error message:", error instanceof Error ? error.message : String(error));
+      // Retry logic for timeout errors
+      if (retryCount < maxRetries && error instanceof Error && error.message.includes("timeout")) {
+        setLoadingMessage(`Connection timeout, retrying... (${retryCount + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return refreshBooks(retryCount + 1);
+      }
+      
+      console.error("Error in refreshBooks:", error);
     }
   }
 
@@ -52,31 +55,22 @@ export default function LibraryPage() {
     
     const loadLibrary = async () => {
       try {
-        console.log("🔍 Starting library load...");
         const {
           data: { user },
         } = await supabase.auth.getUser();
         
-        console.log("👤 User data:", user ? "Found user" : "No user");
-        
         if (!active) return;
         
         if (!user) {
-          console.log("❌ No user, redirecting to home");
           router.replace("/");
           return;
         }
         
-        console.log("📧 Setting email:", user.email);
         setEmail(user.email ?? null);
-        
-        console.log("📚 Refreshing books...");
         await refreshBooks();
-        
-        console.log("✅ Library load complete, setting loading to false");
         setLoading(false);
       } catch (error) {
-        console.error("❌ Error loading library:", error);
+        console.error("Error loading library:", error);
         if (active) {
           setLoading(false);
         }
@@ -85,11 +79,10 @@ export default function LibraryPage() {
 
     // Add a safety timeout to prevent infinite loading
     const safetyTimeout = setTimeout(() => {
-      console.log("⚠️ Safety timeout reached, forcing loading to false");
       if (active) {
         setLoading(false);
       }
-    }, 15000); // 15 second safety timeout
+    }, 25000); // 25 second safety timeout (allows for retries)
 
     loadLibrary();
 
@@ -115,7 +108,7 @@ export default function LibraryPage() {
   }, [router]);
 
   if (loading) {
-    return <div className="p-6">Loading...</div>;
+    return <div className="p-6">{loadingMessage}</div>;
   }
 
   if (!email) {
