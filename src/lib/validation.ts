@@ -80,13 +80,3 @@ export function checkRateLimit(
   record.count++;
   return true;
 }
-
-// Clean up old rate limit records
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, record] of rateLimitMap.entries()) {
-    if (now > record.resetTime) {
-      rateLimitMap.delete(key);
-    }
-  }
-}, 300000); // Clean up every 5 minutes
