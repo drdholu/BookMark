@@ -10,7 +10,6 @@ export const env = {
 export function assertPublicEnv() {
   if (!env.NEXT_PUBLIC_SUPABASE_URL || !env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     // We avoid throwing at build to not block local iteration; UI can warn instead
-    // eslint-disable-next-line no-console
     console.warn("Missing Supabase public env. Check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.");
   }
 }

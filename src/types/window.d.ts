@@ -4,7 +4,7 @@ declare global {
   interface Window {
     pdfjsLib?: {
       GlobalWorkerOptions: { workerSrc: string };
-      getDocument: (src: string) => { promise: Promise<any> };
+      getDocument: (src: unknown) => { promise: Promise<unknown> };
       version?: string;
     };
   }
