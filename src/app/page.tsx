@@ -24,7 +24,7 @@ export default function Home() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-3xl font-semibold">BookMark</h1>
+      <h1 className="text-3xl font-semibold">BookMarked</h1>
       <p className="opacity-80">Read your books on web and PWA with sync.</p>
       <div className="flex gap-3">
         {!signedIn && (

@@ -16,19 +16,21 @@ export default function LibraryPage() {
 
   async function refreshBooks() {
     try {
+      console.log("🔄 Fetching books from database...");
       const { data, error } = await supabase
         .from("books")
         .select("*")
         .order("uploaded_at", { ascending: false });
       
       if (error) {
-        console.error("Error fetching books:", error);
+        console.error("❌ Error fetching books:", error);
         return;
       }
       
+      console.log("📖 Books fetched:", data?.length || 0, "books");
       setBooks(data as unknown as BookRow[]);
     } catch (error) {
-      console.error("Error in refreshBooks:", error);
+      console.error("❌ Error in refreshBooks:", error);
     }
   }
 
@@ -37,22 +39,31 @@ export default function LibraryPage() {
     
     const loadLibrary = async () => {
       try {
+        console.log("🔍 Starting library load...");
         const {
           data: { user },
         } = await supabase.auth.getUser();
         
+        console.log("👤 User data:", user ? "Found user" : "No user");
+        
         if (!active) return;
         
         if (!user) {
+          console.log("❌ No user, redirecting to home");
           router.replace("/");
           return;
         }
         
+        console.log("📧 Setting email:", user.email);
         setEmail(user.email ?? null);
+        
+        console.log("📚 Refreshing books...");
         await refreshBooks();
+        
+        console.log("✅ Library load complete, setting loading to false");
         setLoading(false);
       } catch (error) {
-        console.error("Error loading library:", error);
+        console.error("❌ Error loading library:", error);
         if (active) {
           setLoading(false);
         }
