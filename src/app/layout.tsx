@@ -3,6 +3,7 @@ import { Instrument_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Header } from "@/components/header";
+import { ServiceWorkerProvider } from "@/components/service-worker-provider";
 
 const instrumentSans = Instrument_Sans({
   variable: "--font-instrument-sans",
@@ -26,12 +27,14 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${instrumentSans.className} ${instrumentSans.variable} antialiased`} suppressHydrationWarning>
         <ThemeProvider>
-          <div className="min-h-screen bg-background">
-            <Header />
-            <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-              {children}
-            </main>
-          </div>
+          <ServiceWorkerProvider>
+            <div className="min-h-screen bg-background">
+              <Header />
+              <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+                {children}
+              </main>
+            </div>
+          </ServiceWorkerProvider>
         </ThemeProvider>
       </body>
     </html>
