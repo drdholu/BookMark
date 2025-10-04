@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { BookOpen, LogIn, UserPlus } from "lucide-react";
 import Link from "next/link";
+import { signInSchema, sanitizeInput } from "@/lib/validation";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -30,14 +31,42 @@ export default function SignInPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setStatus("Processing...");
-    if (mode === "sign-up") {
-      const { error } = await supabase.auth.signUp({ email, password });
-      setStatus(error ? error.message : "Check your email to confirm your account.");
-      return;
+    
+    try {
+      // Validate and sanitize input
+      const sanitizedEmail = sanitizeInput(email);
+      const sanitizedPassword = sanitizeInput(password);
+      
+      const validation = signInSchema.safeParse({
+        email: sanitizedEmail,
+        password: sanitizedPassword,
+      });
+      
+      if (!validation.success) {
+        setStatus(validation.error.errors[0].message);
+        return;
+      }
+      
+      if (mode === "sign-up") {
+        const { error } = await supabase.auth.signUp({ 
+          email: validation.data.email, 
+          password: validation.data.password 
+        });
+        setStatus(error ? error.message : "Check your email to confirm your account.");
+        return;
+      }
+      
+      const { error } = await supabase.auth.signInWithPassword({ 
+        email: validation.data.email, 
+        password: validation.data.password 
+      });
+      
+      if (error) setStatus(error.message);
+      else setStatus(null);
+    } catch (error) {
+      setStatus("An unexpected error occurred. Please try again.");
+      console.error("Auth error:", error);
     }
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) setStatus(error.message);
-    else setStatus(null);
   }
 
   return (
