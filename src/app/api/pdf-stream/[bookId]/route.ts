@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+// Use standard Request type for route handlers
 
 interface CacheEntry {
   data: ArrayBuffer;
@@ -120,7 +120,7 @@ function parseRange(rangeHeader: string, contentLength: number): RangeRequest | 
   return { start, end, total: contentLength };
 }
 
-export async function GET(req: NextRequest, { params }: { params: { bookId: string } }) {
+export async function GET(req: Request, { params }: { params: { bookId: string } }) {
   const startTime = Date.now();
   const bookId = params.bookId;
   try {
@@ -204,7 +204,7 @@ export async function GET(req: NextRequest, { params }: { params: { bookId: stri
   }
 }
 
-export async function HEAD(req: NextRequest, { params }: { params: { bookId: string } }) {
+export async function HEAD(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const fileUrl = searchParams.get('url');
