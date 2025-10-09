@@ -10,13 +10,18 @@ type PdfReaderProps = {
 
 type PDFJSLib = {
   GlobalWorkerOptions: { workerSrc: string };
-  getDocument: (src: unknown) => { promise: Promise<PDFDocumentProxy> };
+  getDocument: (src: unknown) => PDFLoadingTask;
   version?: string;
 };
 
 type PDFDocumentProxy = {
   numPages: number;
   getPage: (pageNumber: number) => Promise<PDFPageProxy>;
+};
+
+type PDFLoadingTask = {
+  promise: Promise<PDFDocumentProxy>;
+  onProgress?: (progressData: { loaded: number; total: number }) => void;
 };
 
 type PDFPageProxy = {
@@ -42,6 +47,7 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
   const [numPages, setNumPages] = useState<number>(0);
   const [scale, setScale] = useState(1.5);
   const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [rendering, setRendering] = useState(false);
@@ -79,10 +85,10 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
           throw new Error('Failed to load PDF.js library');
         }
 
-        // Stream through local proxy to ensure Range support and cache headers
-        const proxiedUrl = `/api/pdf-proxy?url=${encodeURIComponent(fileUrl)}`;
+        // Use range-aware Supabase streaming endpoint
+        const streamUrl = `/api/pdf-stream/${bookId}?url=${encodeURIComponent(fileUrl)}`;
         const loadingTask = pdfjsLib.getDocument({
-          url: proxiedUrl,
+          url: streamUrl,
           disableRange: false,
           disableStream: false,
           withCredentials: false,
@@ -99,6 +105,16 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
           // Performance
           verbosity: 0, // Reduce console output
         });
+        // Progressive loading indicator
+        try {
+          if (typeof loadingTask.onProgress === 'function') {
+            loadingTask.onProgress = ({ loaded, total }: { loaded: number; total: number }) => {
+              if (total > 0) setProgress(Math.min(100, Math.round((loaded / total) * 100)));
+            };
+          }
+        } catch {
+          // ignore if pdf.js shape changes
+        }
         const pdf = await loadingTask.promise;
         
         if (!mounted) return;
@@ -136,6 +152,40 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
       mounted = false;
     };
   }, [fileUrl, bookId]);
+
+  // Intelligent prefetching based on reading patterns
+  const prefetchAdjacentPages = useCallback(async (currentPage: number) => {
+    if (!pdfDocRef.current) return;
+
+    const totalPages = pdfDocRef.current.numPages;
+    const prefetchCount = Math.min(3, Math.ceil(readingSpeed * 2)); // Adaptive prefetch count
+    
+    // Prefetch next pages (more important for forward reading)
+    for (let i = 1; i <= prefetchCount; i++) {
+      const nextPage = currentPage + i;
+      if (nextPage <= totalPages && !prefetchedPages.has(nextPage)) {
+        try {
+          await pdfDocRef.current.getPage(nextPage);
+          setPrefetchedPages(prev => new Set([...prev, nextPage]));
+          console.log(`Prefetched page ${nextPage}`);
+        } catch (error) {
+          console.warn(`Failed to prefetch page ${nextPage}:`, error);
+        }
+      }
+    }
+
+    // Prefetch previous page (less aggressive)
+    const prevPage = currentPage - 1;
+    if (prevPage >= 1 && !prefetchedPages.has(prevPage)) {
+      try {
+        await pdfDocRef.current.getPage(prevPage);
+        setPrefetchedPages(prev => new Set([...prev, prevPage]));
+        console.log(`Prefetched page ${prevPage}`);
+      } catch (error) {
+        console.warn(`Failed to prefetch page ${prevPage}:`, error);
+      }
+    }
+  }, [readingSpeed, prefetchedPages]);
 
   // Render current page
   const renderPage = useCallback(async (pageNumber: number) => {
@@ -178,41 +228,9 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
       renderingRef.current = false;
       setRendering(false);
     }
-  }, [scale]);
+  }, [scale, prefetchAdjacentPages]);
 
-  // Intelligent prefetching based on reading patterns
-  const prefetchAdjacentPages = useCallback(async (currentPage: number) => {
-    if (!pdfDocRef.current) return;
-
-    const totalPages = pdfDocRef.current.numPages;
-    const prefetchCount = Math.min(3, Math.ceil(readingSpeed * 2)); // Adaptive prefetch count
-    
-    // Prefetch next pages (more important for forward reading)
-    for (let i = 1; i <= prefetchCount; i++) {
-      const nextPage = currentPage + i;
-      if (nextPage <= totalPages && !prefetchedPages.has(nextPage)) {
-        try {
-          await pdfDocRef.current.getPage(nextPage);
-          setPrefetchedPages(prev => new Set([...prev, nextPage]));
-          console.log(`Prefetched page ${nextPage}`);
-        } catch (error) {
-          console.warn(`Failed to prefetch page ${nextPage}:`, error);
-        }
-      }
-    }
-
-    // Prefetch previous page (less aggressive)
-    const prevPage = currentPage - 1;
-    if (prevPage >= 1 && !prefetchedPages.has(prevPage)) {
-      try {
-        await pdfDocRef.current.getPage(prevPage);
-        setPrefetchedPages(prev => new Set([...prev, prevPage]));
-        console.log(`Prefetched page ${prevPage}`);
-      } catch (error) {
-        console.warn(`Failed to prefetch page ${prevPage}:`, error);
-      }
-    }
-  }, [readingSpeed, prefetchedPages]);
+  
 
   // Calculate reading speed based on page transitions
   const updateReadingSpeed = useCallback((newPage: number) => {
@@ -306,7 +324,7 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
       <div className="flex items-center justify-center h-screen bg-background">
         <div className="text-center space-y-4">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-muted-foreground">Loading PDF...</p>
+          <p className="text-muted-foreground">Loading PDF... {progress > 0 ? `${progress}%` : ''}</p>
         </div>
       </div>
     );

@@ -11,6 +11,7 @@ import { supabase } from "@/lib/supabase"
 export function Header() {
   const [mounted, setMounted] = useState(false)
   const [signedIn, setSignedIn] = useState<boolean | null>(null)
+  const [isOnline, setIsOnline] = useState(true)
 
   useEffect(() => {
     setMounted(true)
@@ -28,7 +29,22 @@ export function Header() {
       setSignedIn(!!session)
     })
     
-    return () => subscription.subscription.unsubscribe()
+    // Online/offline listeners
+    const handleOnline = () => setIsOnline(true)
+    const handleOffline = () => setIsOnline(false)
+    if (typeof window !== 'undefined') {
+      setIsOnline(navigator.onLine)
+      window.addEventListener('online', handleOnline)
+      window.addEventListener('offline', handleOffline)
+    }
+    
+    return () => {
+      subscription.subscription.unsubscribe()
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('online', handleOnline)
+        window.removeEventListener('offline', handleOffline)
+      }
+    }
   }, [])
 
   const handleSignOut = async () => {
@@ -94,6 +110,9 @@ export function Header() {
           </nav>
         </div>
         <div className="flex items-center space-x-2">
+          {!isOnline && (
+            <span className="rounded px-2 py-0.5 text-xs bg-yellow-500/15 text-yellow-500 border border-yellow-500/30">Offline</span>
+          )}
           {signedIn ? (
             <Button variant="ghost" size="sm" onClick={handleSignOut} className="flex items-center space-x-1 cursor-pointer">
               <LogOut className="h-3 w-3" />

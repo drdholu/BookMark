@@ -6,6 +6,7 @@
 const CACHE_NAME = 'bookmarked-pdfs-v1';
 const PDF_CACHE = 'pdfs-v1';
 const STATIC_CACHE = 'static-v1';
+const APP_SHELL = ['/favicon.ico', '/offline.html'];
 const MAX_CACHE_SIZE = 50 * 1024 * 1024; // 50MB limit
 
 // Cache strategies (for future use)
@@ -21,17 +22,11 @@ self.addEventListener('install', event => {
   
   event.waitUntil(
     caches.open(STATIC_CACHE).then(cache => {
-      // Cache only static resources that actually exist
-      const resourcesToCache = [
-        // Only cache static assets, not Next.js routes
-        '/favicon.ico'
-      ];
-      
       return Promise.allSettled(
-        resourcesToCache.map(url => 
+        APP_SHELL.map(url => 
           cache.add(url).catch(error => {
             console.warn(`Failed to cache ${url}:`, error);
-            return null; // Continue with other resources
+            return null;
           })
         )
       );
@@ -73,7 +68,30 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const request = event.request;
   const url = new URL(request.url);
+  const isNavigation = request.mode === 'navigate' || (request.destination === '' && request.method === 'GET' && url.pathname.startsWith('/'));
   
+  // Offline navigation fallback
+  if (isNavigation) {
+    event.respondWith((async () => {
+      try {
+        const network = await fetch(request);
+        return network;
+      } catch (e) {
+        const cache = await caches.open(STATIC_CACHE);
+        const offline = await cache.match('/offline.html');
+        if (offline) return offline;
+        throw e;
+      }
+    })());
+    return;
+  }
+
+  // Handle chunked streaming endpoint explicitly
+  if (url.pathname.startsWith('/api/pdf-stream/')) {
+    event.respondWith(handlePDFStreamRequest(request));
+    return;
+  }
+
   // Handle PDF requests
   if (url.pathname.includes('/api/pdf-proxy') || 
       request.headers.get('accept')?.includes('application/pdf')) {
@@ -167,6 +185,53 @@ async function handlePDFRequest(request) {
       }
     }
     
+    throw error;
+  }
+}
+
+/**
+ * Handle /api/pdf-stream requests with range-aware caching.
+ * We synthesize a cache key that includes the Range window, so each chunk is independently cached.
+ */
+async function handlePDFStreamRequest(request) {
+  // Only GET is cacheable
+  if (request.method !== 'GET') return fetch(request);
+
+  const rangeHeader = request.headers.get('range');
+  // If no range header, fallback to network-first without caching to avoid large blobs
+  if (!rangeHeader) {
+    try {
+      return await fetch(request);
+    } catch (e) {
+      // Attempt cache as a last resort
+      const cache = await caches.open(PDF_CACHE);
+      const cached = await cache.match(request);
+      if (cached) return cached;
+      throw e;
+    }
+  }
+
+  // Build a synthetic cache request key incorporating range header
+  const url = new URL(request.url);
+  const cacheUrl = new URL(url);
+  cacheUrl.searchParams.set('__range', rangeHeader.replace(/\s+/g, ''));
+  const cacheKey = new Request(cacheUrl.toString(), { method: 'GET' });
+
+  const cache = await caches.open(PDF_CACHE);
+  const cached = await cache.match(cacheKey);
+  if (cached) return cached;
+
+  // Network-first; cache successful 206 responses
+  try {
+    const networkResponse = await fetch(request);
+    if (networkResponse.status === 206) {
+      // Store with minimal extra headers to keep 206 semantics
+      await cache.put(cacheKey, networkResponse.clone());
+      await cleanupCache(cache);
+    }
+    return networkResponse;
+  } catch (error) {
+    if (cached) return cached;
     throw error;
   }
 }
