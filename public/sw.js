@@ -4,8 +4,8 @@
  */
 
 const CACHE_NAME = 'bookmarked-pdfs-v1';
-const PDF_CACHE = 'pdfs-v1';
-const STATIC_CACHE = 'static-v1';
+const PDF_CACHE = 'pdfs-v2';
+const STATIC_CACHE = 'static-v2';
 const APP_SHELL = ['/favicon.ico', '/offline.html'];
 const MAX_CACHE_SIZE = 50 * 1024 * 1024; // 50MB limit
 
@@ -68,51 +68,63 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const request = event.request;
   const url = new URL(request.url);
-  const isNavigation = request.mode === 'navigate' || (request.destination === '' && request.method === 'GET' && url.pathname.startsWith('/'));
-  
-  // Offline navigation fallback
-  if (isNavigation) {
-    event.respondWith((async () => {
-      try {
-        const network = await fetch(request);
-        return network;
-      } catch (e) {
-        const cache = await caches.open(STATIC_CACHE);
-        const offline = await cache.match('/offline.html');
-        if (offline) return offline;
-        throw e;
-      }
-    })());
-    return;
-  }
 
-  // Handle chunked streaming endpoint explicitly
+  // Prioritize specialized handlers first so they aren't misclassified as navigations
   if (url.pathname.startsWith('/api/pdf-stream/')) {
     event.respondWith(handlePDFStreamRequest(request));
     return;
   }
 
-  // Handle PDF requests
   if (url.pathname.includes('/api/pdf-proxy') || 
       request.headers.get('accept')?.includes('application/pdf')) {
     event.respondWith(handlePDFRequest(request));
     return;
   }
   
-  // Handle static assets
   if (url.pathname.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2)$/)) {
     event.respondWith(handleStaticRequest(request));
     return;
   }
   
-  // Handle API requests
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(handleAPIRequest(request));
     return;
   }
+
+  // Strict navigation detection and caching for offline refresh
+  if (request.mode === 'navigate') {
+    event.respondWith((async () => {
+      const cache = await caches.open(STATIC_CACHE);
+      try {
+        const networkResponse = await fetch(request);
+        if (networkResponse && networkResponse.ok) {
+          try {
+            await cache.put(request, networkResponse.clone());
+          } catch {}
+        }
+        return networkResponse;
+      } catch {
+        const cached = await cache.match(request);
+        if (cached) return cached;
+        const offline = await cache.match('/offline.html');
+        if (offline) return offline;
+        return new Response('Offline', { status: 503 });
+      }
+    })());
+    return;
+  }
   
-  // Default: network first
-  event.respondWith(fetch(request));
+  // Default: network-first with graceful offline handling
+  event.respondWith((async () => {
+    try {
+      return await fetch(request);
+    } catch {
+      const cache = await caches.open(STATIC_CACHE);
+      const cached = await cache.match(request);
+      if (cached) return cached;
+      return new Response('Offline', { status: 503 });
+    }
+  })());
 });
 
 /**
