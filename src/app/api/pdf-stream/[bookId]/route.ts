@@ -120,9 +120,9 @@ function parseRange(rangeHeader: string, contentLength: number): RangeRequest | 
   return { start, end, total: contentLength };
 }
 
-export async function GET(req: Request, { params }: { params: { bookId: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ bookId: string }> }) {
   const startTime = Date.now();
-  const bookId = params.bookId;
+  const { bookId } = await params;
   try {
     const { searchParams } = new URL(req.url);
     const fileUrl = searchParams.get('url');
