@@ -28,29 +28,32 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative py-20 md:py-32">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(45%_45%_at_50%_50%,hsl(var(--primary)/0.1)_0%,transparent_100%)]"></div>
+      <section className="relative py-24 md:py-40">
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(50%_50%_at_50%_50%,hsl(var(--primary)/0.12)_0%,transparent_100%)]"></div>
         
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center space-y-8">
+          <div className="text-center space-y-10">
             <div className="inline-flex items-center justify-center">
-              <BookOpen className="h-16 w-16 md:h-20 md:w-20 text-primary" strokeWidth={1.5} />
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full"></div>
+                <BookOpen className="relative h-16 w-16 md:h-24 md:w-24 text-primary" strokeWidth={1.5} />
+              </div>
             </div>
             
-            <div className="space-y-4">
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight">
+            <div className="space-y-6">
+              <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
                 BookMarked
               </h1>
-              <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-                Your personal digital library. Read your EPUB and PDF books anywhere. Sync your progress across all devices seamlessly.
+              <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                Your personal digital library. Read your books anywhere, sync your progress seamlessly across all devices.
               </p>
             </div>
 
-            <div className="flex justify-center pt-4">
-              <Button asChild size="lg" className="text-base px-8 h-12">
+            <div className="flex justify-center pt-6">
+              <Button asChild size="lg" className="text-base px-10 h-12 shadow-lg hover:shadow-xl transition-all">
                 <Link href={signedIn ? "/library" : "/sign-in"}>
                   {signedIn ? "Open Library" : "Get Started"}
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
             </div>
