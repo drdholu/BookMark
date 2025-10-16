@@ -13,12 +13,5 @@ https://github.com/user-attachments/assets/5c7c6c43-1e1f-478e-8f4b-1caaa2d34f0e
 - [ ] add a reading progress ui
 - [ ] improve speed on low network areas
 
----
-
-
-### current speed 
-
-30 requests, 6.2 MB transferred, 23.6 MB resources, Finish: 48.49s **with network throttling (slow 4g)**
-
 
 > why did i make this? i wanted a "reader" app that would sync my books on my laptop and phone. no other deep reason lol.

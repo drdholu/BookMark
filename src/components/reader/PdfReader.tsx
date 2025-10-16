@@ -45,7 +45,7 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
 
   const [pageNum, setPageNum] = useState(1);
   const [numPages, setNumPages] = useState<number>(0);
-  const [scale, setScale] = useState(1.5);
+  const [scale, setScale] = useState(1.25);
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
@@ -186,6 +186,24 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
       }
     }
   }, [readingSpeed, prefetchedPages]);
+
+  // Fit-to-width on first render for mobile widths
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const applyFit = () => {
+      const width = el.clientWidth;
+      // Heuristic: for narrow screens, reduce scale a bit; for wider, keep default
+      if (width && width < 450) {
+        setScale(1);
+      } else if (width && width < 600) {
+        setScale(1.1);
+      }
+    };
+    applyFit();
+    window.addEventListener("resize", applyFit, { passive: true } as EventListenerOptions);
+    return () => window.removeEventListener("resize", applyFit as unknown as EventListener);
+  }, []);
 
   // Render current page
   const renderPage = useCallback(async (pageNumber: number) => {
@@ -349,11 +367,11 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
   }
 
   return (
-    <div ref={containerRef} className="flex flex-col h-screen bg-background">
+    <div ref={containerRef} className="flex flex-col h-[100dvh] bg-background">
       {/* Top Toolbar */}
       <div className="border-b border-border bg-card">
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3 gap-2 flex-wrap">
+          <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
             <a
               href="/library"
               className="p-2 rounded-lg hover:bg-accent transition-colors mr-1"
@@ -369,7 +387,7 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <div className="flex items-center gap-2 px-3">
+            <div className="flex items-center gap-2 px-2">
               <input
                 type="number"
                 value={pageNum}
@@ -377,7 +395,7 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
                   const val = parseInt(e.target.value);
                   if (val >= 1 && val <= numPages) setPageNum(val);
                 }}
-                className="w-16 px-2 py-1 text-center bg-background border border-border rounded"
+                className="w-14 sm:w-16 px-2 py-1 text-center bg-background border border-border rounded"
                 min={1}
                 max={numPages}
               />
@@ -393,7 +411,7 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
             <button
               onClick={zoomOut}
               disabled={scale <= 0.5}
@@ -402,7 +420,7 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
             >
               <ZoomOut className="w-5 h-5" />
             </button>
-            <span className="text-sm text-muted-foreground min-w-[4rem] text-center">
+            <span className="text-sm text-muted-foreground min-w-[3.5rem] text-center">
               {Math.round(scale * 100)}%
             </span>
             <button
@@ -413,7 +431,7 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
             >
               <ZoomIn className="w-5 h-5" />
             </button>
-            <div className="w-px h-6 bg-border mx-2" />
+            <div className="w-px h-6 bg-border mx-2 hidden sm:block" />
             <button
               onClick={toggleFullscreen}
               className="p-2 rounded-lg hover:bg-accent transition-colors"
@@ -431,10 +449,10 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
 
       {/* Canvas Container */}
       <div className="flex-1 overflow-auto bg-muted/20">
-        <div className="flex justify-center items-start p-8 min-h-full">
+        <div className="flex justify-center items-start p-3 sm:p-6 min-h-full">
           <canvas
             ref={canvasRef}
-            className="shadow-2xl bg-white"
+            className="shadow bg-white sm:shadow-2xl"
             style={{ display: rendering ? "none" : "block" }}
           />
           {rendering && (

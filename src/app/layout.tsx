@@ -18,6 +18,13 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_APP_DESCRIPTION ?? "Read your books on web and PWA with sync",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -30,7 +37,7 @@ export default function RootLayout({
           <ServiceWorkerProvider>
             <div className="min-h-screen bg-background">
               <Header />
-              <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+              <main className="container mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-6">
                 {children}
               </main>
             </div>

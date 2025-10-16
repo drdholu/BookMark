@@ -28,7 +28,7 @@ export default function EpubReader({ bookId, fileUrl }: Props) {
       bookRef.current = book;
       const rend = book.renderTo(containerRef.current as HTMLDivElement, {
         width: "100%",
-        height: "100vh",
+        height: "100dvh",
       });
       setRendition(rend);
       await rend.display(lastCfi);
@@ -72,12 +72,12 @@ export default function EpubReader({ bookId, fileUrl }: Props) {
   }
 
   return (
-    <div className="w-full">
-      <div className="flex gap-2 p-2 border-b">
+    <div className="w-full h-[100dvh] flex flex-col bg-background">
+      <div className="flex gap-2 p-2 border-b bg-card sticky top-0 z-10">
         <button className="border rounded px-3 py-1" onClick={() => rendition?.prev()}>Prev</button>
         <button className="border rounded px-3 py-1" onClick={() => rendition?.next()}>Next</button>
       </div>
-      <div ref={containerRef} className="w-full" />
+      <div ref={containerRef} className="w-full flex-1" />
     </div>
   );
 }

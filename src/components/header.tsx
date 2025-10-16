@@ -55,14 +55,14 @@ export function Header() {
   if (!mounted) {
     return (
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-12 items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center space-x-4">
-            <Link href="/" className="flex items-center space-x-2 cursor-pointer">
+        <div className="container flex h-12 items-center justify-between px-3 sm:px-6 lg:px-8 gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <Link href="/" className="flex items-center gap-2 cursor-pointer min-w-0">
               <div className="h-5 w-5 bg-muted rounded" />
-              <span className="text-lg font-bold">BookMarked</span>
+              <span className="text-lg font-bold truncate">BookMarked</span>
             </Link>
-            <Separator orientation="vertical" className="h-4" />
-            <nav className="flex items-center space-x-2">
+            <Separator orientation="vertical" className="h-4 hidden xs:block" />
+            <nav className="hidden sm:flex items-center gap-1 flex-wrap">
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/" className="flex items-center space-x-1">
                   <div className="h-3 w-3 bg-muted rounded" />
@@ -77,7 +77,7 @@ export function Header() {
               </Button>
             </nav>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <div className="h-8 w-8 bg-muted rounded" />
           </div>
         </div>
@@ -87,14 +87,14 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-12 items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center space-x-4">
-          <Link href="/" className="flex items-center space-x-2 cursor-pointer">
+      <div className="container flex h-12 items-center justify-between px-3 sm:px-6 lg:px-8 gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <Link href="/" className="flex items-center gap-2 cursor-pointer min-w-0">
             <BookOpen className="h-5 w-5 text-primary" />
-            <span className="text-lg font-bold">BookMarked</span>
+            <span className="text-lg font-bold truncate">BookMarked</span>
           </Link>
-          <Separator orientation="vertical" className="h-4" />
-          <nav className="flex items-center space-x-2">
+          <Separator orientation="vertical" className="h-4 hidden xs:block" />
+          <nav className="hidden sm:flex items-center gap-1 flex-wrap">
             <Button variant="ghost" size="sm" asChild>
               <Link href="/" className="flex items-center space-x-1 cursor-pointer">
                 <Home className="h-3 w-3" />
@@ -109,7 +109,7 @@ export function Header() {
             </Button>
           </nav>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           {!isOnline && (
             <span className="rounded px-2 py-0.5 text-xs bg-yellow-500/15 text-yellow-500 border border-yellow-500/30">Offline</span>
           )}

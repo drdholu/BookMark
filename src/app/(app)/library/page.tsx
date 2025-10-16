@@ -202,7 +202,7 @@ function BookList({ books, onDeleteBook }: { books: BookRow[]; onDeleteBook: (id
   }
   
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
       {books.map((b) => (
         <Card key={b.id} className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
           <CardContent className="p-0">
@@ -226,7 +226,7 @@ function BookList({ books, onDeleteBook }: { books: BookRow[]; onDeleteBook: (id
               </Link>
               <Badge 
                 variant="secondary" 
-                className="absolute top-2 right-2 text-xs"
+                className="absolute top-2 right-2 text-[10px] sm:text-xs"
               >
                 {b.format?.toUpperCase()}
               </Badge>
@@ -264,7 +264,7 @@ function BookList({ books, onDeleteBook }: { books: BookRow[]; onDeleteBook: (id
                 </AlertDialog>
               </div>
             </div>
-            <div className="p-3">
+            <div className="p-2 sm:p-3">
               <Link href={`/read/${b.id}`} className="block cursor-pointer">
                 <h3 className="font-medium truncate text-sm mb-1 hover:text-primary transition-colors">
                   {b.title ?? "Untitled"}
