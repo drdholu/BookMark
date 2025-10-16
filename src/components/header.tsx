@@ -54,31 +54,31 @@ export function Header() {
 
   if (!mounted) {
     return (
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-12 items-center justify-between px-3 sm:px-6 lg:px-8 gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <Link href="/" className="flex items-center gap-2 cursor-pointer min-w-0">
-              <div className="h-5 w-5 bg-muted rounded" />
-              <span className="text-lg font-bold truncate">BookMarked</span>
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-sm">
+        <div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8 gap-3">
+          <div className="flex items-center gap-4 min-w-0">
+            <Link href="/" className="flex items-center gap-2.5 cursor-pointer min-w-0 group">
+              <div className="h-6 w-6 bg-muted rounded" />
+              <span className="text-xl font-semibold truncate">BookMarked</span>
             </Link>
-            <Separator orientation="vertical" className="h-4 hidden xs:block" />
+            <Separator orientation="vertical" className="h-5 hidden sm:block" />
             <nav className="hidden sm:flex items-center gap-1 flex-wrap">
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/" className="flex items-center space-x-1">
-                  <div className="h-3 w-3 bg-muted rounded" />
-                  <span className="text-sm">Home</span>
+              <Button variant="ghost" size="default" className="h-9" asChild>
+                <Link href="/" className="flex items-center space-x-2">
+                  <div className="h-4 w-4 bg-muted rounded" />
+                  <span>Home</span>
                 </Link>
               </Button>
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/library" className="flex items-center space-x-1">
-                  <div className="h-3 w-3 bg-muted rounded" />
-                  <span className="text-sm">Library</span>
+              <Button variant="ghost" size="default" className="h-9" asChild>
+                <Link href="/library" className="flex items-center space-x-2">
+                  <div className="h-4 w-4 bg-muted rounded" />
+                  <span>Library</span>
                 </Link>
               </Button>
             </nav>
           </div>
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 bg-muted rounded" />
+            <div className="h-9 w-9 bg-muted rounded" />
           </div>
         </div>
       </header>
@@ -86,43 +86,45 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-12 items-center justify-between px-3 sm:px-6 lg:px-8 gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <Link href="/" className="flex items-center gap-2 cursor-pointer min-w-0">
-            <BookOpen className="h-5 w-5 text-primary" />
-            <span className="text-lg font-bold truncate">BookMarked</span>
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-sm">
+      <div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8 gap-3">
+        <div className="flex items-center gap-4 min-w-0">
+          <Link href="/" className="flex items-center gap-2.5 cursor-pointer min-w-0 group transition-colors">
+            <BookOpen className="h-6 w-6 text-primary group-hover:text-primary/80 transition-colors" strokeWidth={2} />
+            <span className="text-xl font-semibold truncate group-hover:text-primary/90 transition-colors">BookMarked</span>
           </Link>
-          <Separator orientation="vertical" className="h-4 hidden xs:block" />
+          <Separator orientation="vertical" className="h-5 hidden sm:block" />
           <nav className="hidden sm:flex items-center gap-1 flex-wrap">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/" className="flex items-center space-x-1 cursor-pointer">
-                <Home className="h-3 w-3" />
-                <span className="text-sm">Home</span>
+            <Button variant="ghost" size="default" className="h-9" asChild>
+              <Link href="/" className="flex items-center space-x-2 cursor-pointer">
+                <Home className="h-4 w-4" />
+                <span>Home</span>
               </Link>
             </Button>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/library" className="flex items-center space-x-1">
-                <Library className="h-3 w-3" />
-                <span className="text-sm">Library</span>
+            <Button variant="ghost" size="default" className="h-9" asChild>
+              <Link href="/library" className="flex items-center space-x-2">
+                <Library className="h-4 w-4" />
+                <span>Library</span>
               </Link>
             </Button>
           </nav>
         </div>
         <div className="flex items-center gap-2">
           {!isOnline && (
-            <span className="rounded px-2 py-0.5 text-xs bg-yellow-500/15 text-yellow-500 border border-yellow-500/30">Offline</span>
+            <span className="rounded-full px-3 py-1 text-xs font-medium bg-yellow-500/15 text-yellow-600 dark:text-yellow-500 border border-yellow-500/30">
+              Offline
+            </span>
           )}
           {signedIn ? (
-            <Button variant="ghost" size="sm" onClick={handleSignOut} className="flex items-center space-x-1 cursor-pointer">
-              <LogOut className="h-3 w-3" />
-              <span className="text-sm">Sign Out</span>
+            <Button variant="ghost" size="default" className="h-9" onClick={handleSignOut}>
+              <LogOut className="h-4 w-4 mr-2" />
+              <span>Sign Out</span>
             </Button>
           ) : (
-            <Button variant="ghost" size="sm" asChild className="flex items-center space-x-1">
+            <Button variant="ghost" size="default" className="h-9" asChild>
               <Link href="/sign-in">
-                <LogIn className="h-3 w-3" />
-                <span className="text-sm">Sign In</span>
+                <LogIn className="h-4 w-4 mr-2" />
+                <span>Sign In</span>
               </Link>
             </Button>
           )}

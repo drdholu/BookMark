@@ -70,26 +70,29 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <BookOpen className="h-12 w-12 text-primary" />
+    <div className="min-h-[calc(100vh-10rem)] flex items-center justify-center py-12">
+      <Card className="w-full max-w-md shadow-lg">
+        <CardHeader className="text-center pb-6">
+          <div className="flex justify-center mb-6">
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full"></div>
+              <BookOpen className="relative h-14 w-14 text-primary" strokeWidth={1.5} />
+            </div>
           </div>
-          <CardTitle className="text-2xl">
+          <CardTitle className="text-3xl font-bold">
             {mode === "sign-in" ? "Welcome back" : "Create account"}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-base mt-2">
             {mode === "sign-in" 
               ? "Sign in to access your library" 
               : "Sign up to start your reading journey"
             }
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <CardContent className="pt-0">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-sm font-medium">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -97,10 +100,11 @@ export default function SignInPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
+                className="h-11"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-sm font-medium">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -108,14 +112,20 @@ export default function SignInPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
+                className="h-11"
               />
               {mode === "sign-up" && (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground pt-1">
                   Password must be at least 6 characters and contain both letters and digits.
                 </p>
               )}
             </div>
-            <Button type="submit" className="w-full" disabled={!!status && status.includes("Processing")}>
+            <Button 
+              type="submit" 
+              className="w-full h-11 text-base shadow-md hover:shadow-lg transition-all" 
+              size="lg"
+              disabled={!!status && status.includes("Processing")}
+            >
               {status && status.includes("Processing") ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
@@ -143,11 +153,11 @@ export default function SignInPage() {
             <Separator />
             <div className="mt-4 text-center">
               {mode === "sign-in" ? (
-                <Button variant="link" onClick={() => setMode("sign-up")} className="text-sm">
+                <Button variant="link" onClick={() => setMode("sign-up")} className="text-sm font-medium">
                   Don&apos;t have an account? Create one
                 </Button>
               ) : (
-                <Button variant="link" onClick={() => setMode("sign-in")} className="text-sm">
+                <Button variant="link" onClick={() => setMode("sign-in")} className="text-sm font-medium">
                   Already have an account? Sign in
                 </Button>
               )}
@@ -155,13 +165,13 @@ export default function SignInPage() {
           </div>
           
           {status && (
-            <div className="mt-4 p-3 rounded-md bg-muted">
-              <p className="text-sm text-muted-foreground">{status}</p>
+            <div className="mt-4 p-4 rounded-lg bg-muted/50 border border-muted-foreground/20">
+              <p className="text-sm text-foreground">{status}</p>
             </div>
           )}
           
           <div className="mt-6 text-center">
-            <Button variant="ghost" asChild>
+            <Button variant="ghost" asChild className="text-sm">
               <Link href="/">← Back to home</Link>
             </Button>
           </div>

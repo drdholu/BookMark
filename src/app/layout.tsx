@@ -1,14 +1,19 @@
 import type { Metadata } from "next";
-import { Instrument_Sans } from "next/font/google";
+import { Inter, Literata } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Header } from "@/components/header";
 import { ServiceWorkerProvider } from "@/components/service-worker-provider";
 
-const instrumentSans = Instrument_Sans({
-  variable: "--font-instrument-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const literata = Literata({
+  variable: "--font-literata",
+  subsets: ["latin"],
   display: "swap",
 });
 
@@ -32,12 +37,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${instrumentSans.className} ${instrumentSans.variable} antialiased`} suppressHydrationWarning>
+      <body className={`${inter.className} ${inter.variable} ${literata.variable} antialiased`} suppressHydrationWarning>
         <ThemeProvider>
           <ServiceWorkerProvider>
             <div className="min-h-screen bg-background">
               <Header />
-              <main className="container mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-6">
+              <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
                 {children}
               </main>
             </div>

@@ -147,11 +147,11 @@ export default function LibraryPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-12 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">{loadingMessage}</p>
+      <div className="flex items-center justify-center min-h-[500px]">
+        <Card className="w-full max-w-md shadow-sm">
+          <CardContent className="p-16 text-center">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto mb-6"></div>
+            <p className="text-muted-foreground text-base">{loadingMessage}</p>
           </CardContent>
         </Card>
       </div>
@@ -160,12 +160,12 @@ export default function LibraryPage() {
 
   if (!email) {
     return (
-      <div className="text-center py-12">
-        <Card className="w-full max-w-md mx-auto">
-          <CardContent className="p-12 text-center">
-            <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h1 className="text-2xl font-bold mb-4">Please sign in to view your library</h1>
-            <Button onClick={() => router.push("/sign-in")} size="lg">
+      <div className="text-center py-16">
+        <Card className="w-full max-w-md mx-auto shadow-lg">
+          <CardContent className="p-16 text-center">
+            <BookOpen className="h-20 w-20 text-muted-foreground/60 mx-auto mb-6" strokeWidth={1.5} />
+            <h1 className="text-3xl font-bold mb-4">Please sign in to view your library</h1>
+            <Button onClick={() => router.push("/sign-in")} size="lg" className="h-11 px-8 shadow-md">
               Sign In
             </Button>
           </CardContent>
@@ -175,10 +175,10 @@ export default function LibraryPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">My Library</h1>
-        <p className="text-muted-foreground">Manage your digital book collection</p>
+    <div className="space-y-8">
+      <div className="space-y-2">
+        <h1 className="text-4xl font-bold tracking-tight">My Library</h1>
+        <p className="text-lg text-muted-foreground">Manage your digital book collection</p>
       </div>
       
       <UploadForm onUploaded={refreshBooks} />
@@ -191,54 +191,54 @@ export default function LibraryPage() {
 function BookList({ books, onDeleteBook }: { books: BookRow[]; onDeleteBook: (id: string) => void }) {
   if (!books.length) {
     return (
-      <Card>
-        <CardContent className="p-12 text-center">
-          <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No books yet</h3>
-          <p className="text-muted-foreground">Upload a PDF to get started with your digital library. EPUB support coming soon!</p>
+      <Card className="border-dashed">
+        <CardContent className="p-16 text-center">
+          <BookOpen className="h-20 w-20 text-muted-foreground/60 mx-auto mb-6" strokeWidth={1.5} />
+          <h3 className="text-xl font-semibold mb-3">No books yet</h3>
+          <p className="text-muted-foreground text-base">Upload a PDF to get started with your digital library.</p>
         </CardContent>
       </Card>
     );
   }
   
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-5">
       {books.map((b) => (
-        <Card key={b.id} className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
+        <Card key={b.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-muted overflow-hidden">
           <CardContent className="p-0">
-            <div className="aspect-[3/4] bg-muted rounded-t-lg relative overflow-hidden">
+            <div className="aspect-[3/4] bg-gradient-to-br from-muted to-muted/50 rounded-t-lg relative overflow-hidden">
               <Link href={`/read/${b.id}`} className="block w-full h-full cursor-pointer">
                 {b.cover_url ? (
                   <img 
                     src={b.cover_url} 
                     alt={b.title ?? "Book cover"}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     {b.format === 'pdf' ? (
-                      <FileText className="h-12 w-12 text-muted-foreground" />
+                      <FileText className="h-14 w-14 text-muted-foreground/60 group-hover:text-muted-foreground transition-colors" strokeWidth={1.5} />
                     ) : (
-                      <FileImage className="h-12 w-12 text-muted-foreground" />
+                      <FileImage className="h-14 w-14 text-muted-foreground/60 group-hover:text-muted-foreground transition-colors" strokeWidth={1.5} />
                     )}
                   </div>
                 )}
               </Link>
               <Badge 
                 variant="secondary" 
-                className="absolute top-2 right-2 text-[10px] sm:text-xs"
+                className="absolute top-2.5 right-2.5 text-[10px] sm:text-xs font-semibold shadow-sm"
               >
                 {b.format?.toUpperCase()}
               </Badge>
               
-              {/* Delete button - always visible */}
-              <div className="absolute top-2 left-2">
+              {/* Delete button */}
+              <div className="absolute top-2.5 left-2.5 opacity-0 group-hover:opacity-100 transition-opacity">
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button
                       size="sm"
                       variant="destructive"
-                      className="h-8 w-8 p-0 cursor-pointer"
+                      className="h-8 w-8 p-0 cursor-pointer shadow-lg"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -264,12 +264,12 @@ function BookList({ books, onDeleteBook }: { books: BookRow[]; onDeleteBook: (id
                 </AlertDialog>
               </div>
             </div>
-            <div className="p-2 sm:p-3">
+            <div className="p-3 sm:p-4">
               <Link href={`/read/${b.id}`} className="block cursor-pointer">
-                <h3 className="font-medium truncate text-sm mb-1 hover:text-primary transition-colors">
+                <h3 className="font-semibold truncate text-sm sm:text-base mb-1.5 group-hover:text-primary transition-colors">
                   {b.title ?? "Untitled"}
                 </h3>
-                <p className="text-xs text-muted-foreground truncate">
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">
                   {b.author ?? "Unknown Author"}
                 </p>
               </Link>
@@ -319,20 +319,20 @@ function UploadForm({ onUploaded }: { onUploaded: () => void }) {
   }, [file, onUploaded]);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <Upload className="h-5 w-5" />
+    <Card className="shadow-sm">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center space-x-2.5 text-xl">
+          <Upload className="h-5 w-5 text-primary" />
           <span>Upload a Book</span>
         </CardTitle>
-        <CardDescription>
-          Upload PDF files to add them to your library. EPUB support coming soon!
+        <CardDescription className="text-base">
+          Upload PDF files to add them to your library.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor={fileInputId}>Choose file</Label>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-3">
+            <Label htmlFor={fileInputId} className="text-sm font-medium">Choose file</Label>
             <div className="flex items-center gap-3">
               <Input 
                 id={fileInputId} 
@@ -344,13 +344,14 @@ function UploadForm({ onUploaded }: { onUploaded: () => void }) {
               <Button 
                 type="button" 
                 variant="outline" 
+                size="default"
                 onClick={() => document.getElementById(fileInputId)?.click()}
-                className="flex items-center space-x-2 cursor-pointer"
+                className="flex items-center space-x-2 cursor-pointer h-10"
               >
                 <Upload className="h-4 w-4" />
                 <span>Choose file</span>
               </Button>
-              <span className="text-sm text-muted-foreground truncate max-w-[50%]">
+              <span className="text-sm text-muted-foreground truncate flex-1 min-w-0">
                 {file?.name ?? "No file selected"}
               </span>
             </div>
@@ -358,7 +359,8 @@ function UploadForm({ onUploaded }: { onUploaded: () => void }) {
           <Button 
             disabled={!file || busy} 
             type="submit" 
-            className="w-full cursor-pointer"
+            size="lg"
+            className="w-full cursor-pointer h-11 text-base shadow-md hover:shadow-lg transition-all"
           >
             {busy ? (
               <>
