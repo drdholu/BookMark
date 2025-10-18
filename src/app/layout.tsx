@@ -1,14 +1,26 @@
 import type { Metadata } from "next";
-import { Instrument_Sans } from "next/font/google";
+import { Inter, Playfair_Display, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Header } from "@/components/header";
 import { ServiceWorkerProvider } from "@/components/service-worker-provider";
 
-const instrumentSans = Instrument_Sans({
-  variable: "--font-instrument-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  display: "swap",
+});
+
+const jetbrains = JetBrains_Mono({
+  variable: "--font-jetbrains",
+  subsets: ["latin"],
   display: "swap",
 });
 
@@ -32,12 +44,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${instrumentSans.className} ${instrumentSans.variable} antialiased`} suppressHydrationWarning>
+      <body 
+        className={`${inter.variable} ${playfair.variable} ${jetbrains.variable} antialiased font-sans`} 
+        suppressHydrationWarning
+      >
         <ThemeProvider>
           <ServiceWorkerProvider>
             <div className="min-h-screen bg-background">
               <Header />
-              <main className="container mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8 lg:py-10">
+              <main className="px-3 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8 lg:py-10">
                 {children}
               </main>
             </div>
