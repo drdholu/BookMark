@@ -55,7 +55,7 @@ export default function Home() {
                 <span className="text-foreground">Anytime</span>
               </h1>
               
-              <p className="text-lg sm:text-xl lg:text-2xl text-muted-foreground leading-relaxed max-w-xl">
+              <p className="text-lg sm:text-xl lg:text-2xl text-muted-foreground leading-relaxed max-w-xl font-sans">
                 Your personal library in the cloud. Organize, read, and sync your books seamlessly across all devices.
               </p>
 
@@ -82,19 +82,19 @@ export default function Home() {
                 </Button>
               </div>
 
-              {/* Stats */}
-              <div className="flex flex-wrap gap-8 pt-8 border-t border-border/50">
-                <div>
-                  <div className="text-3xl font-bold text-foreground">Free</div>
-                  <div className="text-sm text-muted-foreground">Forever Plan</div>
+              {/* Features List */}
+              <div className="flex flex-wrap gap-6 pt-8 border-t border-border/50">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-primary"></div>
+                  <span className="text-sm font-medium text-muted-foreground">Cloud Syncing</span>
                 </div>
-                <div>
-                  <div className="text-3xl font-bold text-foreground">Unlimited</div>
-                  <div className="text-sm text-muted-foreground">Storage</div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-primary"></div>
+                  <span className="text-sm font-medium text-muted-foreground">Offline Reading</span>
                 </div>
-                <div>
-                  <div className="text-3xl font-bold text-foreground">100%</div>
-                  <div className="text-sm text-muted-foreground">Secure</div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-primary"></div>
+                  <span className="text-sm font-medium text-muted-foreground">Progress Tracking</span>
                 </div>
               </div>
             </div>
@@ -157,7 +157,7 @@ export default function Home() {
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6">
               Everything You Need
             </h2>
-            <p className="text-xl sm:text-2xl text-muted-foreground max-w-3xl mx-auto">
+            <p className="text-xl sm:text-2xl text-muted-foreground max-w-3xl mx-auto font-sans">
               Powerful features designed for the modern reader
             </p>
           </div>
@@ -249,7 +249,7 @@ export default function Home() {
                 <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold">
                   Start Your Reading Journey Today
                 </h2>
-                <p className="text-xl sm:text-2xl text-muted-foreground">
+                <p className="text-xl sm:text-2xl text-muted-foreground font-sans">
                   Join thousands of readers who trust BookMarked for their digital library
                 </p>
               </div>
