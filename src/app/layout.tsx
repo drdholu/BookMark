@@ -40,7 +40,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body 
-        className={`${instrumentSans.variable} ${playfair.variable} antialiased font-sans`} 
+        className={`${instrumentSans.className} ${instrumentSans.variable} ${playfair.variable} antialiased`} 
         suppressHydrationWarning
       >
         <ThemeProvider>
