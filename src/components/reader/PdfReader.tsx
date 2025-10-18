@@ -340,9 +340,17 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-background">
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-muted-foreground">Loading PDF... {progress > 0 ? `${progress}%` : ''}</p>
+        <div className="text-center space-y-6 animate-fade-in">
+          <div className="relative inline-flex">
+            <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl"></div>
+            <div className="relative w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+          </div>
+          <div className="space-y-2">
+            <p className="text-lg font-medium">Loading PDF</p>
+            {progress > 0 && (
+              <p className="text-sm text-muted-foreground">{progress}%</p>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -351,13 +359,20 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
   if (error) {
     return (
       <div className="flex items-center justify-center h-screen bg-background">
-        <div className="text-center space-y-4 max-w-md px-6">
-          <div className="text-6xl">⚠️</div>
-          <h2 className="text-2xl font-bold text-foreground">Error</h2>
-          <p className="text-muted-foreground">{error}</p>
+        <div className="text-center space-y-6 max-w-md px-6 animate-scale-in">
+          <div className="relative inline-flex">
+            <div className="absolute inset-0 bg-destructive/10 rounded-full blur-xl"></div>
+            <div className="relative bg-destructive/10 p-6 rounded-2xl border border-destructive/20">
+              <div className="text-5xl">⚠️</div>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold text-foreground">Error Loading PDF</h2>
+            <p className="text-muted-foreground">{error}</p>
+          </div>
           <button
             onClick={() => window.location.reload()}
-            className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+            className="px-8 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 smooth-transition shadow-lg hover:shadow-xl font-medium"
           >
             Retry
           </button>
@@ -369,25 +384,26 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
   return (
     <div ref={containerRef} className="flex flex-col h-[100dvh] bg-background">
       {/* Top Toolbar */}
-      <div className="border-b border-border bg-card">
-        <div className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3 gap-2 flex-wrap">
+      <div className="border-b border-border bg-card/80 backdrop-blur-lg supports-[backdrop-filter]:bg-card/80 shadow-sm">
+        <div className="flex items-center justify-between px-3 sm:px-4 py-3 sm:py-4 gap-3 flex-wrap">
           <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
             <a
               href="/library"
-              className="p-2 rounded-lg hover:bg-accent transition-colors mr-1"
+              className="p-2 rounded-lg hover:bg-primary/10 smooth-transition mr-1 group"
               title="Back to Library"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-5 h-5 group-hover:text-primary smooth-transition" />
             </a>
+            <div className="w-px h-6 bg-border mx-1 hidden sm:block" />
             <button
               onClick={goToPreviousPage}
               disabled={pageNum <= 1}
-              className="p-2 rounded-lg hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-lg hover:bg-primary/10 disabled:opacity-40 disabled:cursor-not-allowed smooth-transition group"
               title="Previous page (←)"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-5 h-5 group-hover:text-primary smooth-transition" />
             </button>
-            <div className="flex items-center gap-2 px-2">
+            <div className="flex items-center gap-2 px-3 py-1 bg-muted/50 rounded-lg border border-border">
               <input
                 type="number"
                 value={pageNum}
@@ -395,19 +411,19 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
                   const val = parseInt(e.target.value);
                   if (val >= 1 && val <= numPages) setPageNum(val);
                 }}
-                className="w-14 sm:w-16 px-2 py-1 text-center bg-background border border-border rounded"
+                className="w-12 sm:w-14 px-1 py-0.5 text-center bg-transparent border-0 focus:outline-none focus:ring-0 font-medium"
                 min={1}
                 max={numPages}
               />
-              <span className="text-muted-foreground">of {numPages}</span>
+              <span className="text-sm text-muted-foreground font-medium">/ {numPages}</span>
             </div>
             <button
               onClick={goToNextPage}
               disabled={pageNum >= numPages}
-              className="p-2 rounded-lg hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-lg hover:bg-primary/10 disabled:opacity-40 disabled:cursor-not-allowed smooth-transition group"
               title="Next page (→)"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-5 h-5 group-hover:text-primary smooth-transition" />
             </button>
           </div>
 
@@ -415,32 +431,32 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
             <button
               onClick={zoomOut}
               disabled={scale <= 0.5}
-              className="p-2 rounded-lg hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-lg hover:bg-primary/10 disabled:opacity-40 disabled:cursor-not-allowed smooth-transition group"
               title="Zoom out (-)"
             >
-              <ZoomOut className="w-5 h-5" />
+              <ZoomOut className="w-5 h-5 group-hover:text-primary smooth-transition" />
             </button>
-            <span className="text-sm text-muted-foreground min-w-[3.5rem] text-center">
+            <span className="text-sm font-medium bg-muted/50 px-3 py-1 rounded-lg border border-border min-w-[4rem] text-center">
               {Math.round(scale * 100)}%
             </span>
             <button
               onClick={zoomIn}
               disabled={scale >= 3}
-              className="p-2 rounded-lg hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-lg hover:bg-primary/10 disabled:opacity-40 disabled:cursor-not-allowed smooth-transition group"
               title="Zoom in (+)"
             >
-              <ZoomIn className="w-5 h-5" />
+              <ZoomIn className="w-5 h-5 group-hover:text-primary smooth-transition" />
             </button>
             <div className="w-px h-6 bg-border mx-2 hidden sm:block" />
             <button
               onClick={toggleFullscreen}
-              className="p-2 rounded-lg hover:bg-accent transition-colors"
+              className="p-2 rounded-lg hover:bg-primary/10 smooth-transition group"
               title="Toggle fullscreen (f)"
             >
               {isFullscreen ? (
-                <Minimize2 className="w-5 h-5" />
+                <Minimize2 className="w-5 h-5 group-hover:text-primary smooth-transition" />
               ) : (
-                <Maximize2 className="w-5 h-5" />
+                <Maximize2 className="w-5 h-5 group-hover:text-primary smooth-transition" />
               )}
             </button>
           </div>
@@ -448,42 +464,46 @@ export default function PdfReader({ fileUrl, bookId }: PdfReaderProps) {
       </div>
 
       {/* Canvas Container */}
-      <div className="flex-1 overflow-auto bg-muted/20">
-        <div className="flex justify-center items-start p-3 sm:p-6 min-h-full">
+      <div className="flex-1 overflow-auto bg-gradient-to-br from-muted/20 to-muted/5">
+        <div className="flex justify-center items-start p-4 sm:p-8 min-h-full">
           <canvas
             ref={canvasRef}
-            className="shadow bg-white sm:shadow-2xl"
+            className="shadow-2xl bg-white rounded-sm"
             style={{ display: rendering ? "none" : "block" }}
           />
           {rendering && (
             <div className="flex items-center justify-center py-20">
-              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+              <div className="relative inline-flex">
+                <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg"></div>
+                <div className="relative w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+              </div>
             </div>
           )}
         </div>
       </div>
 
       {/* Performance Info & Keyboard Shortcuts */}
-      <div className="border-t border-border bg-card px-4 py-2">
-        <div className="flex justify-between items-center">
-          <div className="text-xs text-muted-foreground">
+      <div className="border-t border-border bg-card/80 backdrop-blur-lg supports-[backdrop-filter]:bg-card/80 px-4 py-3">
+        <div className="flex justify-between items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-4 text-xs font-medium">
             {prefetchedPages.size > 0 && (
-              <span className="mr-4">
-                📚 {prefetchedPages.size} pages cached
+              <span className="flex items-center gap-1.5 px-2 py-1 bg-primary/10 text-primary rounded-md">
+                <span>📚</span>
+                <span>{prefetchedPages.size} cached</span>
               </span>
             )}
             {readingSpeed > 0 && (
-              <span className="mr-4">
-                ⚡ {Math.round(readingSpeed * 60)} pages/min
+              <span className="flex items-center gap-1.5 px-2 py-1 bg-accent/10 text-accent rounded-md">
+                <span>⚡</span>
+                <span>{Math.round(readingSpeed * 60)} pages/min</span>
               </span>
             )}
           </div>
-          <p className="text-xs text-muted-foreground">
-            <kbd className="px-1.5 py-0.5 bg-muted rounded">←</kbd> Previous •{" "}
-            <kbd className="px-1.5 py-0.5 bg-muted rounded">→</kbd> Next •{" "}
-            <kbd className="px-1.5 py-0.5 bg-muted rounded">+</kbd> Zoom In •{" "}
-            <kbd className="px-1.5 py-0.5 bg-muted rounded">-</kbd> Zoom Out •{" "}
-            <kbd className="px-1.5 py-0.5 bg-muted rounded">F</kbd> Fullscreen
+          <p className="text-xs text-muted-foreground hidden lg:flex items-center gap-2">
+            <kbd className="px-2 py-1 bg-muted rounded border border-border font-medium">←</kbd> Prev •{" "}
+            <kbd className="px-2 py-1 bg-muted rounded border border-border font-medium">→</kbd> Next •{" "}
+            <kbd className="px-2 py-1 bg-muted rounded border border-border font-medium">+</kbd> Zoom •{" "}
+            <kbd className="px-2 py-1 bg-muted rounded border border-border font-medium">F</kbd> Fullscreen
           </p>
         </div>
       </div>
