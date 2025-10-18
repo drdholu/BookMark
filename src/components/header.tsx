@@ -36,14 +36,31 @@ export function Header() {
       window.addEventListener('offline', handleOffline)
     }
     
+    // Close mobile menu on Escape key
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMobileMenuOpen(false)
+      }
+    }
+    
+    if (mobileMenuOpen) {
+      document.addEventListener('keydown', handleEscape)
+      // Prevent body scroll when menu is open
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    
     return () => {
       subscription.subscription.unsubscribe()
       if (typeof window !== 'undefined') {
         window.removeEventListener('online', handleOnline)
         window.removeEventListener('offline', handleOffline)
       }
+      document.removeEventListener('keydown', handleEscape)
+      document.body.style.overflow = ''
     }
-  }, [])
+  }, [mobileMenuOpen])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -70,6 +87,14 @@ export function Header() {
 
   return (
     <>
+      {/* Backdrop for mobile menu */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/40 z-40 lg:hidden animate-fade-in"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+      
       <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur-md shadow-sm">
         <div className="max-w-[1400px] mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8 gap-2 sm:gap-4">
           <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
@@ -168,32 +193,47 @@ export function Header() {
         
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-border bg-card/98 backdrop-blur-md">
-            <nav className="flex flex-col p-4 space-y-2">
-              <Button 
-                variant="ghost" 
-                asChild 
-                className="justify-start h-12 rounded-xl hover:bg-primary/15"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <Link href="/" className="flex items-center gap-3 cursor-pointer">
-                  <Home className="h-5 w-5" />
-                  <span className="text-base font-semibold">Home</span>
-                </Link>
-              </Button>
-              <Button 
-                variant="ghost" 
-                asChild 
-                className="justify-start h-12 rounded-xl hover:bg-primary/15"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <Link href="/library" className="flex items-center gap-3 cursor-pointer">
-                  <Library className="h-5 w-5" />
-                  <span className="text-base font-semibold">Library</span>
-                </Link>
-              </Button>
+          <div className="lg:hidden border-t border-border bg-card/98 backdrop-blur-md animate-slide-down shadow-2xl">
+            <nav className="flex flex-col p-6 space-y-1 max-h-[calc(100vh-4rem)] overflow-y-auto">
+              {/* Navigation Links */}
+              <div className="space-y-1">
+                <Button 
+                  variant="ghost" 
+                  asChild 
+                  className="w-full justify-start h-14 rounded-2xl hover:bg-primary/10 smooth-transition group"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Link href="/" className="flex items-center gap-4 cursor-pointer">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 smooth-transition">
+                      <Home className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex flex-col items-start">
+                      <span className="text-base font-semibold">Home</span>
+                      <span className="text-xs text-muted-foreground">Welcome page</span>
+                    </div>
+                  </Link>
+                </Button>
+                
+                <Button 
+                  variant="ghost" 
+                  asChild 
+                  className="w-full justify-start h-14 rounded-2xl hover:bg-primary/10 smooth-transition group"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Link href="/library" className="flex items-center gap-4 cursor-pointer">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 smooth-transition">
+                      <Library className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex flex-col items-start">
+                      <span className="text-base font-semibold">Library</span>
+                      <span className="text-xs text-muted-foreground">Your books</span>
+                    </div>
+                  </Link>
+                </Button>
+              </div>
               
-              <div className="pt-4 border-t border-border mt-2">
+              {/* Auth Section */}
+              <div className="pt-6 mt-4 border-t border-border">
                 {signedIn ? (
                   <Button 
                     variant="ghost" 
@@ -201,21 +241,26 @@ export function Header() {
                       handleSignOut()
                       setMobileMenuOpen(false)
                     }}
-                    className="w-full justify-start h-12 rounded-xl hover:bg-destructive/15 text-destructive"
+                    className="w-full justify-start h-14 rounded-2xl hover:bg-destructive/10 smooth-transition group"
                   >
-                    <LogOut className="h-5 w-5 mr-3" />
-                    <span className="text-base font-semibold">Sign Out</span>
+                    <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center group-hover:bg-destructive/20 smooth-transition">
+                      <LogOut className="h-5 w-5 text-destructive" />
+                    </div>
+                    <div className="flex flex-col items-start ml-4">
+                      <span className="text-base font-semibold text-destructive">Sign Out</span>
+                      <span className="text-xs text-muted-foreground">End your session</span>
+                    </div>
                   </Button>
                 ) : (
                   <Button 
                     variant="default"
                     asChild 
-                    className="w-full justify-start h-12 rounded-xl shadow-lg font-semibold"
+                    className="w-full justify-center h-14 rounded-2xl shadow-xl font-semibold text-base smooth-transition"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <Link href="/sign-in" className="cursor-pointer">
-                      <LogIn className="h-5 w-5 mr-3" />
-                      <span className="text-base">Sign In</span>
+                    <Link href="/sign-in" className="cursor-pointer flex items-center gap-2">
+                      <LogIn className="h-5 w-5" />
+                      <span>Sign In</span>
                     </Link>
                   </Button>
                 )}
